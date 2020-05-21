@@ -28,7 +28,7 @@ class EdgeFinder:
         # Hough Transform:
         self._rho = rho
         self._theta = theta
-        self._ntheta = int(theta * 180 / np.pi)   # number of 1°
+        self._ntheta = 1   # number of 1°
         self._threshold = threshold
         self._min_line_len = min_line_len
         self._max_line_gap = max_line_gap
@@ -81,12 +81,12 @@ class EdgeFinder:
 
         # Hough Transform
         def on_rho(pos):
-            self._nrho = pos  # update the parameter value
-            self._rho = pos * np.pi/180
-            self._render()  # update the GUI
+           self._nrho = max(pos, 1)  # update the parameter value
+           self._render()  # update the GUI
 
         def on_theta(pos):
-            self._theta = pos  # update the parameter value
+            self._ntheta = max(pos, 1)  # update the parameter value
+            self._theta = pos * np.pi / 180
             self._render()  # update the GUI
 
         def on_threshold(pos):
