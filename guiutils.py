@@ -182,7 +182,7 @@ class EdgeFinder:
                                               , self._theta, self._threshold,
                                               self._min_line_len,
                                               self._max_line_gap,
-                                              segmented=True)
+                                              segmented=False)
         self._image_with_segments = weighted_img(self._line_segments_img,
                                                  initial_img=self.image)
 

@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-
+from numpy.polynomial.polynomial import polyfit
 
 def grayscale(img):
     """Applies the Grayscale transform
@@ -57,6 +57,62 @@ def draw_line_segments(img, lines, color=[255, 0, 0], thickness=2):
     for line in lines:
         for x1, y1, x2, y2 in line:
             cv2.line(img, (x1, y1), (x2, y2), color, thickness)
+
+
+def draw_lines(img, lines, color=[255, 0, 0], thickness=5,
+               start_left_x=0, start_left_y=540,
+               end_left_x=450, end_left_y=325,
+               start_right_x=960, start_right_y=540, end_right_x=510, end_right_y=325,
+               ):
+    # initiate point list for right and left lane
+    left_lane_x = []
+    left_lane_y = []
+    right_lane_x = []
+    right_lane_y = []
+    # initiate slope
+    slope = 1
+    # iterate through lines
+    for line in lines:
+        for x1, y1, x2, y2 in line:  # for points in line
+            # calculate slope
+            slope = (y1 - y2) / (x1 - x2)
+            # add points to corresponding lane
+            if slope > 0:  # and (((x1+x2)/2) < (img.shape[1] / 2)) : # if slope is positive to the left
+                left_lane_x.extend([x1, x2])
+                left_lane_y.extend([y1, y2])
+            elif slope < 0:  # and (((x1+x2)/2) > (img.shape[1] / 2)):  # if slope is negative to the right
+                right_lane_x.extend([x1, x2])
+                right_lane_y.extend([y1, y2])
+
+    #global kernel_size, low_threshold, high_threshold, box_left_start_x, box_left_start_y, box_left_end_x, box_left_end_y
+    #global box_right_start_x, box_right_end_x, box_right_start_y, box_right_end_y
+    #global rho, theta, threshold, min_line_len, max_line_gap
+    #global vertices
+
+    if (right_lane_x) and (left_lane_y):  # if there is something to draw
+        # determine equation desscribing the lane line
+        b_right, m_right = polyfit(np.array(right_lane_x), np.array(right_lane_y), 1)
+        b_left, m_left = polyfit(np.array(left_lane_x), np.array(left_lane_y), 1)
+
+        # determine x-position of start point given y = shape[0]
+        start_right_x = int(round((start_right_y - b_right) /
+                                  m_right)) if m_right != 0 else 860
+        start_left_x = int(round((start_left_y - b_left) /
+                                 m_left)) if m_left != 0 else 100
+
+        # ending point
+        end_right_x = int(round((end_right_y - b_right) /
+                                m_right)) if m_right != 0 else end_right_x
+        end_left_x = int(round((end_left_y - b_left) /
+                               m_left)) if m_left != 0 else end_left_x
+
+        # draw lines
+        cv2.line(img, (start_left_x, start_left_y),
+                 (end_left_x, end_left_y), color, thickness)
+        cv2.line(img, (start_right_x, start_right_y),
+                 (end_right_x, end_right_y), color, thickness)
+
+    return
 
 
 def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap, segmented=False):
